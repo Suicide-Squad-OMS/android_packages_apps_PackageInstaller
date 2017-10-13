@@ -140,6 +140,7 @@ public class PackageInstallerActivity extends OverlayTouchActivity implements On
         boolean permVisible = false;
         mScrollView = null;
         mOkCanInstall = false;
+
         int msg = 0;
         AppSecurityPermissions perms = new AppSecurityPermissions(this, mPkgInfo);
         final int N = perms.getPermissionCount(AppSecurityPermissions.WHICH_ALL);
@@ -230,11 +231,12 @@ public class PackageInstallerActivity extends OverlayTouchActivity implements On
 
         mInstallConfirm.setVisibility(View.VISIBLE);
         mOk.setEnabled(true);
+        mOkCanInstall = true;
+
         if (mScrollView == null) {
             // There is nothing to scroll view, so the ok button is immediately
             // set to install.
             mOk.setText(R.string.install);
-            mOkCanInstall = true;
         } else {
             mOk.setOnClickListener(new View.OnClickListener() {
                 @Override
