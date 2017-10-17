@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Color engine -->
+    <color name="pixel_primary_color">#242424</color>
+    <color name="pixel_secondary_color">#3a3a3a</color>
+</resources>

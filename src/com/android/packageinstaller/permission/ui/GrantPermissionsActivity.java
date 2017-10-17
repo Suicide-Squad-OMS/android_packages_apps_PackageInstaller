@@ -20,6 +20,9 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.app.admin.DevicePolicyManager;
+import android.app.IThemeCallback;
+import android.app.ThemeManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -31,6 +34,9 @@ import android.graphics.drawable.Icon;
 import android.hardware.camera2.utils.ArrayUtils;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings.Secure;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -68,8 +74,42 @@ public class GrantPermissionsActivity extends OverlayTouchActivity
 
     boolean mResultSet;
 
+    private int mTheme;
+    private ThemeManager mThemeManager;
+
+    private final IThemeCallback mThemeCallback = new IThemeCallback.Stub() {
+
+        @Override
+        public void onThemeChanged(int themeMode, int color) {
+            onCallbackAdded(themeMode, color);
+            GrantPermissionsActivity.this.runOnUiThread(() -> {
+                GrantPermissionsActivity.this.recreate();
+            });
+        }
+
+        @Override
+        public void onCallbackAdded(int themeMode, int color) {
+            mTheme = color;
+        }
+    };
+
     @Override
     public void onCreate(Bundle icicle) {
+        final int themeMode = Secure.getInt(getContentResolver(),
+                Secure.THEME_PRIMARY_COLOR, 0);
+        final int accentColor = Secure.getInt(getContentResolver(),
+                Secure.THEME_ACCENT_COLOR, 0);
+        mThemeManager = (ThemeManager) getSystemService(Context.THEME_SERVICE);
+        if (mThemeManager != null) {
+            mThemeManager.addCallback(mThemeCallback);
+        }
+        if (themeMode != 0 || accentColor != 0) {
+            getTheme().applyStyle(mTheme, true);
+        }
+        if (themeMode == 1 || themeMode == 3) {
+             getTheme().applyStyle(R.style.grantpermissions_pixel_theme, true);
+        }
+
         super.onCreate(icicle);
         setFinishOnTouchOutside(false);
 
