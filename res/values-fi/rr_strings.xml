@@ -16,5 +16,10 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Tab label for version information [CHAR LIMIT=20] -->
+  <string name="appVersion">Version tiedot</string>
+  <string name="currentVersion">Nykyinen versio:</string>
+  <string name="newVersion">Uusi versio:</string>
+  <string name="not_available">ei saatavilla</string>
   <!-- Body text for new tab when there are no permissions [CHAR LIMIT=NONE] -->
+  <string name="no_perms">Sovellus ei vaadi käyttöoikeuksia.</string>
 </resources>
