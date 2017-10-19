@@ -20,4 +20,29 @@
         <item name="android:windowAnimationStyle">@*android:style/Animation.Material.Dialog</item>
     </style>
 
+    <style name="packageinstaller_pixel_theme_light">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:textAppearanceMedium">@style/MediumText</item>
+        <item name="android:textAppearanceSmall">@style/SmallText</item>
+        <item name="android:titleTextStyle">@style/TitleText</item>
+        <item name="android:colorPrimary">@*android:color/primary_material_light</item>
+        <item name="android:colorPrimaryDark">@*android:color/primary_dark_material_light</item>
+        <item name="android:textColorPrimary">@color/pixel_primary_color</item>
+    </style>
+
+    <style name="packageinstaller_pixel_theme_dark">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:textAppearanceMedium">@style/MediumText</item>
+        <item name="android:textAppearanceSmall">@style/SmallText</item>
+        <item name="android:titleTextStyle">@style/TitleText</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+    </style>
+
+    <style name="installappprogress_pixel_theme_dark">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
 </resources>

@@ -22,7 +22,10 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.IThemeCallback;
+import android.app.ThemeManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -34,11 +37,14 @@ import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.util.Log;
 
 /*
@@ -48,6 +54,9 @@ import android.util.Log;
  */
 public class UninstallerActivity extends Activity {
     private static final String TAG = "UninstallerActivity";
+
+    private int mTheme;
+    private ThemeManager mThemeManager;
 
     public static class UninstallAlertDialogFragment extends DialogFragment implements
             DialogInterface.OnClickListener {
@@ -162,8 +171,39 @@ public class UninstallerActivity extends Activity {
     private String mPackageName;
     private DialogInfo mDialogInfo;
 
+    private final IThemeCallback mThemeCallback = new IThemeCallback.Stub() {
+
+        @Override
+        public void onThemeChanged(int themeMode, int color) {
+            onCallbackAdded(themeMode, color);
+            UninstallerActivity.this.runOnUiThread(() -> {
+                UninstallerActivity.this.recreate();
+            });
+        }
+
+        @Override
+        public void onCallbackAdded(int themeMode, int color) {
+            mTheme = color;
+        }
+    };
+
     @Override
     public void onCreate(Bundle icicle) {
+        final int themeMode = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.THEME_PRIMARY_COLOR, 0);
+        final int accentColor = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.THEME_ACCENT_COLOR, 0);
+        mThemeManager = (ThemeManager) getSystemService(Context.THEME_SERVICE);
+        if (mThemeManager != null) {
+            mThemeManager.addCallback(mThemeCallback);
+        }
+        if (themeMode != 0 || accentColor != 0) {
+            getTheme().applyStyle(mTheme, true);
+        }
+        if (themeMode == 1 || themeMode == 3) {
+             getTheme().applyStyle(R.style.grantpermissions_pixel_theme, true);
+        }
+
         super.onCreate(icicle);
         // Get intent information.
         // We expect an intent with URI of the form package://<packageName>#<className>

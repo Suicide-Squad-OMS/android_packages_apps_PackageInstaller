@@ -19,6 +19,8 @@ package com.android.packageinstaller;
 import android.app.ActivityManagerNative;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.IThemeCallback;
+import android.app.ThemeManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
@@ -36,6 +38,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Process;
 import android.os.UserManager;
 import android.provider.Settings;
@@ -123,6 +127,9 @@ public class PackageInstallerActivity extends OverlayTouchActivity implements On
     private static final int DLG_INSTALL_ERROR = DLG_BASE + 4;
     private static final int DLG_ADMIN_RESTRICTS_UNKNOWN_SOURCES = DLG_BASE + 6;
     private static final int DLG_NOT_SUPPORTED_ON_WEAR = DLG_BASE + 7;
+
+    private int mTheme;
+    private ThemeManager mThemeManager;
 
     private void startInstallConfirm() {
         ((TextView) findViewById(R.id.install_confirm_question))
@@ -458,8 +465,42 @@ public class PackageInstallerActivity extends OverlayTouchActivity implements On
                 ? RESULT_OK : RESULT_FIRST_USER, result);
     }
 
+    private final IThemeCallback mThemeCallback = new IThemeCallback.Stub() {
+
+        @Override
+        public void onThemeChanged(int themeMode, int color) {
+            onCallbackAdded(themeMode, color);
+            PackageInstallerActivity.this.runOnUiThread(() -> {
+                PackageInstallerActivity.this.recreate();
+            });
+        }
+
+        @Override
+        public void onCallbackAdded(int themeMode, int color) {
+            mTheme = color;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle icicle) {
+        final int themeMode = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.THEME_PRIMARY_COLOR, 0);
+        final int accentColor = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.THEME_ACCENT_COLOR, 0);
+        mThemeManager = (ThemeManager) getSystemService(Context.THEME_SERVICE);
+        if (mThemeManager != null) {
+            mThemeManager.addCallback(mThemeCallback);
+        }
+        if (themeMode != 0 || accentColor != 0) {
+            getTheme().applyStyle(mTheme, true);
+        }
+        if (themeMode == 0 || themeMode == 2) {
+            getTheme().applyStyle(R.style.packageinstaller_pixel_theme_light, true);
+        }
+        if (themeMode == 1 || themeMode == 3) {
+            getTheme().applyStyle(R.style.packageinstaller_pixel_theme_dark, true);
+        }
+
         super.onCreate(icicle);
 
         mPm = getPackageManager();
