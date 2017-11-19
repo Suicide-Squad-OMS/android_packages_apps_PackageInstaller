@@ -21,7 +21,9 @@ import static android.content.pm.PackageInstaller.SessionParams.UID_UNKNOWN;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.IThemeCallback;
 import android.app.PendingIntent;
+import android.app.ThemeManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,7 +43,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -87,6 +91,9 @@ public class InstallAppProgress extends Activity implements View.OnClickListener
     private CharSequence mLabel;
     private HandlerThread mInstallThread;
     private Handler mInstallHandler;
+
+    private int mTheme;
+    private ThemeManager mThemeManager;
 
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
@@ -186,8 +193,39 @@ public class InstallAppProgress extends Activity implements View.OnClickListener
         }
     }
 
+    private final IThemeCallback mThemeCallback = new IThemeCallback.Stub() {
+
+        @Override
+        public void onThemeChanged(int themeMode, int color) {
+            onCallbackAdded(themeMode, color);
+            InstallAppProgress.this.runOnUiThread(() -> {
+                InstallAppProgress.this.recreate();
+            });
+        }
+
+        @Override
+        public void onCallbackAdded(int themeMode, int color) {
+            mTheme = color;
+        }
+    };
+
     @Override
     public void onCreate(Bundle icicle) {
+        final int themeMode = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.THEME_PRIMARY_COLOR, 0);
+        final int accentColor = Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.THEME_ACCENT_COLOR, 0);
+        mThemeManager = (ThemeManager) getSystemService(Context.THEME_SERVICE);
+        if (mThemeManager != null) {
+            mThemeManager.addCallback(mThemeCallback);
+        }
+        if (themeMode != 0 || accentColor != 0) {
+            getTheme().applyStyle(mTheme, true);
+        }
+        if (themeMode == 1 || themeMode == 3) {
+            getTheme().applyStyle(R.style.installappprogress_pixel_theme_dark, true);
+        }
+
         super.onCreate(icicle);
         Intent intent = getIntent();
         mAppInfo = intent.getParcelableExtra(PackageUtil.INTENT_ATTR_APPLICATION_INFO);
