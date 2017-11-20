@@ -16,5 +16,10 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Tab label for version information [CHAR LIMIT=20] -->
+  <string name="appVersion">Informació de la versió</string>
+  <string name="currentVersion">Versió actual:</string>
+  <string name="newVersion">Nova versió:</string>
+  <string name="not_available">no disponible</string>
   <!-- Body text for new tab when there are no permissions [CHAR LIMIT=NONE] -->
+  <string name="no_perms">Aquesta aplicació no necessita permisos.</string>
 </resources>
